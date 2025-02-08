@@ -45,6 +45,7 @@ struct appargs_t {
     int brightness;
     std::vector<unsigned> colors;
     bool list;
+    bool names_only;
     bool show_info;
     bool set_only_colors;
 
@@ -91,11 +92,11 @@ void appargs_t::print_usage ()
 void appargs_t::parse_arguments (int argc, char* argv[])
 {
     static struct option long_options[] = {
-        { "list",    no_argument,       0, 'l'},
-        { "info",    no_argument,       0, 'i'},
-        { "colors",  no_argument,       0, 'c'},
-        { "trigger", no_argument,       0, 't'},
-        { "help",    no_argument,       0, 'h'},
+        { "list",    no_argument, 0, 'l'},
+        { "info",    no_argument, 0, 'i'},
+        { "colors",  no_argument, 0, 'c'},
+        { "trigger", no_argument, 0, 't'},
+        { "help",    no_argument, 0, 'h'},
         { 0, 0, 0, 0}
     };
     static const char* arg_format = "lict:h";
@@ -183,7 +184,8 @@ void appargs_t::print_lsled_usage ()
     cout << "  List information about available LEDs." << endl;
     cout << endl;
     cout << fn_bold << "Options:" << fn_normal << endl;
-    cout << "  -h, --help  Print this help message." << endl;
+    cout << "  -n, --names  Print only the names of the available LEDs." << endl;
+    cout << "  -h, --help   Print this help message." << endl;
     cout << endl;
 }
 
@@ -193,16 +195,20 @@ void appargs_t::print_lsled_usage ()
 void appargs_t::parse_lsled_arguments (int argc, char* argv[])
 {
     static struct option long_options[] = {
-        { "help",    no_argument,       0, 'h'},
+        { "names", no_argument, 0, 'n'},
+        { "help",  no_argument, 0, 'h'},
         { 0, 0, 0, 0}
     };
-    static const char* arg_format = "h";
+    static const char* arg_format = "nh";
 
     while (1) {
         int c = getopt_long (argc, argv, arg_format, long_options, NULL);
         if (c == -1)
             break;
         switch (c) {
+        case 'n':
+            names_only = true;
+            break;
         case 'h':
             print_lsled_usage ();
             exit (0);
@@ -226,6 +232,7 @@ void appargs_t::parse_lsled_arguments (int argc, char* argv[])
 appargs_t::appargs_t (int argc, char* argv[])
     : brightness (-1),
       list (false),
+      names_only (false),
       show_info (false),
       set_only_colors (false)
 {
@@ -421,7 +428,13 @@ int main (int argc, char* argv[])
         appargs_t opt (argc, argv);
 
         if (opt.list) {
-            list_leds ();
+            if (opt.names_only) {
+                auto leds = ledpp::led::led_names ();
+                for (auto& name : leds)
+                    cout << name << endl;
+            }else{
+                list_leds ();
+            }
             return 0;
         }
         if (opt.show_info) {
