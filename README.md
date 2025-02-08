@@ -2,7 +2,7 @@
 
 ## led application
 
-```shell
+```
 Usage: led [OPTIONS] [LED_NAME] [BRIGHTNESS [COLOR_INTENSITY ...]]
   List LEDs, modify or show LED brightness, color and trigger.
   If only argument LED_NAME is supplied, show the current and
