@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2024,2025 Dan Arrhenius <dan@ultramarin.se>
+ *
+ * This file is part of led++.
+ *
+ * led++ is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published
+ * by the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -261,7 +279,7 @@ static void list_leds ()
     add_field ("NAME", len_led_name, led_names);
     add_field ("CUR/MAX", len_br_txt, br_txt);
     add_field ("TRIGGER", len_trigger_names, trigger_names);
-    add_field ("COLOR:VALUE", len_colors, colors);
+    add_field ("COLOR:VALUE[,COLOR:VALUE...]", len_colors, colors);
     ++num_lines;
 
     auto leds = ledpp::led::led_names ();
@@ -382,7 +400,7 @@ static void print_led_info (appargs_t& opt)
         if (i++)
             cout << ' ';
         if (trigger == active_trigger)
-            cout << '[' << trigger << ']';
+            cout << '[' << fn_bold << trigger << fn_normal << ']';
         else
             cout << trigger;
     }
