@@ -45,6 +45,7 @@ struct appargs_t {
     int brightness;
     std::vector<unsigned> colors;
     bool list;
+    bool list_triggers;
     bool names_only;
     bool show_info;
     bool set_only_colors;
@@ -181,11 +182,13 @@ void appargs_t::print_lsled_usage ()
 {
     cout << endl;
     cout << fn_bold << "Usage: " << program_invocation_short_name << " [OPTIONS]" << fn_normal << endl;
+    cout << fn_bold << "Usage: " << program_invocation_short_name << " -t|--triggers <LED>" << fn_normal << endl;
     cout << "  List information about available LEDs." << endl;
     cout << endl;
     cout << fn_bold << "Options:" << fn_normal << endl;
-    cout << "  -n, --names  Print only the names of the available LEDs." << endl;
-    cout << "  -h, --help   Print this help message." << endl;
+    cout << "  -n, --names     Print only the names of the available LEDs." << endl;
+    cout << "  -t, --triggers  List available triggers for the specified LED." << endl;
+    cout << "  -h, --help      Print this help message." << endl;
     cout << endl;
 }
 
@@ -195,11 +198,12 @@ void appargs_t::print_lsled_usage ()
 void appargs_t::parse_lsled_arguments (int argc, char* argv[])
 {
     static struct option long_options[] = {
-        { "names", no_argument, 0, 'n'},
-        { "help",  no_argument, 0, 'h'},
+        { "names",    no_argument, 0, 'n'},
+        { "triggers", no_argument, 0, 't'},
+        { "help",     no_argument, 0, 'h'},
         { 0, 0, 0, 0}
     };
-    static const char* arg_format = "nh";
+    static const char* arg_format = "nth";
 
     while (1) {
         int c = getopt_long (argc, argv, arg_format, long_options, NULL);
@@ -209,12 +213,23 @@ void appargs_t::parse_lsled_arguments (int argc, char* argv[])
         case 'n':
             names_only = true;
             break;
+        case 't':
+            list_triggers = true;
+            break;
         case 'h':
             print_lsled_usage ();
             exit (0);
             break;
         default:
             cerr << "Use option -h for help." << endl;
+            exit (1);
+        }
+    }
+    if (list_triggers) {
+        if (optind < argc) {
+            led_name = argv[optind++];
+        }else{
+            cerr << "Error: missing argument, use option -h for help." << endl;
             exit (1);
         }
     }
@@ -232,6 +247,7 @@ void appargs_t::parse_lsled_arguments (int argc, char* argv[])
 appargs_t::appargs_t (int argc, char* argv[])
     : brightness (-1),
       list (false),
+      list_triggers (false),
       names_only (false),
       show_info (false),
       set_only_colors (false)
@@ -427,7 +443,14 @@ int main (int argc, char* argv[])
     try {
         appargs_t opt (argc, argv);
 
-        if (opt.list) {
+        if (opt.list_triggers) {
+            ledpp::led led (opt.led_name);
+            auto triggers = led.triggers ();
+            for (auto& t : triggers)
+                cout << t << endl;
+            return 0;
+        }
+        else if (opt.list) {
             if (opt.names_only) {
                 auto leds = ledpp::led::led_names ();
                 for (auto& name : leds)
